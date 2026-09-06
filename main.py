@@ -1,6 +1,6 @@
 import json
 import os
-import sys  # 新增导入 sys
+import sys
 import time
 import hashlib
 import tkinter as tk
@@ -19,10 +19,8 @@ class MinecraftTimerApp:
 
         # ========== 修改 base_dir 获取方式（兼容 PyInstaller 打包） ==========
         if getattr(sys, 'frozen', False):
-            # 打包后的 exe 路径
             self.base_dir = os.path.dirname(sys.executable)
         else:
-            # 开发环境下的脚本路径
             self.base_dir = os.path.dirname(os.path.abspath(__file__))
         # =================================================================
 
@@ -214,7 +212,6 @@ class MinecraftTimerApp:
 
     # ==================== 自定义居中提示框 ====================
     def show_centered_message(self, title, message, msg_type="info", buttons=("确定",)):
-        """在主窗口中央显示自定义模态提示框，返回点击的按钮文本"""
         win = tk.Toplevel(self.root)
         win.title(title)
         win.resizable(False, False)
@@ -285,12 +282,14 @@ class MinecraftTimerApp:
                         continue
                     if 'launcher' in name_lower:
                         continue
-                    if name_lower == 'minecraft.windows.exe' or 'minecraft' in name_lower:
+                    # 精确匹配基岩版官方进程名
+                    if name_lower == 'minecraft.windows.exe' or name_lower == 'minecraft.exe':
                         return True
                 except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                     continue
         except Exception as e:
             print(f"检测基岩版进程时出错: {e}")
+            return False
         return False
 
     def detect_processes(self, initial=False, force_refresh=False):
@@ -371,7 +370,6 @@ class MinecraftTimerApp:
         self.create_version_panel(left_frame, "java", "☕ Java 版")
         self.create_version_panel(right_frame, "bedrock", "⛏ 基岩版")
 
-        # 底部按钮框架
         button_frame = tk.Frame(main_frame, pady=10)
         button_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
@@ -567,7 +565,6 @@ class MinecraftTimerApp:
             return f"{seconds // 86400} 天前"
 
     def on_close(self):
-        # 处理运行中的计时
         for key in ("java", "bedrock"):
             if self.running[key] and self.session_start[key]:
                 elapsed = time.time() - self.session_start[key]
